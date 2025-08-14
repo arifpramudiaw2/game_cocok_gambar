@@ -6,7 +6,108 @@
     <title>Pasangkan Emoji 2x3 (3 Jenis - Cocokkan 2)</title>
     <!-- Memuat Tailwind CSS untuk styling yang mudah dan responsif -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Google untuk tampilan yang lebih menarik -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
+        /* Font untuk seluruh halaman */
+        body {
+            font-family: 'Nunito', sans-serif;
+        }
+        
+        /* Gaya untuk form input nama pemain */
+        .player-form {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 2rem;
+            border-radius: 1rem;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            transition: all 0.3s ease;
+        }
+        
+        .player-form:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(31, 38, 135, 0.3);
+        }
+        
+        .input-container {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+        
+        .player-input {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            border: none;
+            border-radius: 0.75rem;
+            background: rgba(255, 255, 255, 0.8);
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .player-input:focus {
+            outline: none;
+            background: white;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .player-input-label {
+            position: absolute;
+            left: 1.5rem;
+            top: 1rem;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            color: #6b7280;
+        }
+        
+        .player-input:focus ~ .player-input-label,
+        .player-input:not(:placeholder-shown) ~ .player-input-label {
+            top: -0.75rem;
+            left: 1rem;
+            font-size: 0.875rem;
+            padding: 0 0.5rem;
+            background: linear-gradient(90deg, #f472b6, #8b5cf6);
+            color: black;
+            border-radius: 0.5rem;
+        }
+        
+        .start-playing-btn {
+            background: linear-gradient(90deg, #f472b6, #8b5cf6);
+            color: black;
+            font-weight: bold;
+            padding: 1rem 2rem;
+            border-radius: 0.75rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .start-playing-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.25);
+        }
+        
+        .start-playing-btn:active {
+            transform: translateY(1px);
+        }
+        
+        /* Animasi untuk nama pemain */
+        .player-name-display {
+            color: #000000; /* Warna hitam */
+            font-weight: 800;
+            display: inline-block;
+            padding: 0 5px;
+            font-size: 110%;
+        }
+        
         /* Gaya kustom untuk memastikan kartu terlihat bagus dalam grid 2x3 dengan 3 jenis emoji (cocokkan 2) */
         .card {
             width: 80px; /* Lebar kartu default untuk perangkat kecil */
@@ -288,14 +389,27 @@
         }
     </style>
 </head>
-<body class="bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 min-h-screen flex flex-col items-center justify-center p-4 font-sans text-white">
+<body class="bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 min-h-screen flex flex-col items-center justify-center p-4 font-sans text-black">
 
-    <div class="bg-white bg-opacity-30 p-6 rounded-2xl shadow-xl max-w-4xl w-full text-center">
-        <h1 class="text-4xl md:text-5xl font-extrabold mb-6 text-white drop-shadow-lg">Cocokan gambar Buah! 🎉</h1>
+    <!-- Form Input Nama Pemain -->
+    <div id="playerNameForm" class="player-form scale-in-center mb-8">
+        <h2 class="text-3xl font-bold mb-6 text-center text-black drop-shadow-lg">Masukkan Nama Pemain</h2>
+        <div class="input-container">
+            <input type="text" id="playerNameInput" class="player-input" placeholder=" " maxlength="20" autocomplete="off">
+            <label for="playerNameInput" class="player-input-label">Nama Pemain</label>
+        </div>
+        <div class="flex justify-center">
+            <button id="startGameButton" class="start-playing-btn pulse-effect">Mulai Bermain</button>
+        </div>
+    </div>
 
-        <div class="flex justify-around items-center mb-6 text-2xl md:text-3xl font-bold">
-            <p>Langkah: <span id="moves">0</span></p>
-            <button id="restartButton" class="bg-yellow-400 hover:bg-yellow-500 text-purple-800 font-bold py-3 px-6 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105">
+    <div id="gameContainer" class="bg-white bg-opacity-30 p-6 rounded-2xl shadow-xl max-w-4xl w-full text-center hidden">
+        <h1 class="text-4xl md:text-5xl font-extrabold mb-6 text-black drop-shadow-lg">Cocokan gambar Buah! 🎉</h1>
+
+        <div class="flex flex-col md:flex-row justify-around items-center mb-6 text-xl md:text-2xl font-bold">
+            <p class="mb-2 md:mb-0">Pemain: <span id="playerNameDisplay" style="color: #000; font-weight: bold;">Nama Pemain</span></p>
+            <p class="mb-2 md:mb-0">Langkah: <span id="moves">0</span></p>
+            <button id="restartButton" class="bg-yellow-400 hover:bg-yellow-500 text-purple-800 font-bold py-2 px-4 md:py-3 md:px-6 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105">
                 Mulai Ulang
             </button>
         </div>
@@ -320,11 +434,19 @@
 
     <script>
         // Mendapatkan elemen-elemen DOM yang diperlukan
+        const playerNameForm = document.getElementById('playerNameForm');
+        const playerNameInput = document.getElementById('playerNameInput');
+        const startGameButton = document.getElementById('startGameButton');
+        const gameContainer = document.getElementById('gameContainer');
+        const playerNameDisplay = document.getElementById('playerNameDisplay');
         const gameBoard = document.getElementById('gameBoard');
         const movesDisplay = document.getElementById('moves');
         const restartButton = document.getElementById('restartButton');
         const startButton = document.getElementById('startButton');
         const messageBox = document.getElementById('messageBox');
+        
+        // Variabel untuk menyimpan nama pemain
+        let playerName = '';
 
         // Daftar emoji yang akan digunakan (untuk memilih 3 jenis emoji secara acak untuk grid 2x3)
          const emojis = ['🍎', '🍌', '🍇', '🍓', '🍊', '🍉', '🥭', '🍍', '🍒', '🥝', '🥥', '🍑'];
@@ -359,14 +481,21 @@
 
             // Reset tombol Mulai
             startButton.textContent = 'Mulai';
-            // Hapus semua event listener yang ada dan tambahkan yang baru
-            startButton.replaceWith(startButton.cloneNode(true));
-            // Seleccionar el botón nuevamente después de reemplazarlo
-            const refreshedStartButton = document.getElementById('startButton');
-            refreshedStartButton.addEventListener('click', hideAllCards);
-            refreshedStartButton.classList.remove('hidden');
-            refreshedStartButton.disabled = false;
-            refreshedStartButton.classList.remove('opacity-50');
+            
+            // Hapus event listener lama dan tambahkan yang baru
+            const newStartButton = startButton.cloneNode(true);
+            startButton.parentNode.replaceChild(newStartButton, startButton);
+            
+            // Tambahkan event listener baru
+            document.getElementById('startButton').addEventListener('click', hideAllCards);
+            document.getElementById('startButton').classList.remove('hidden');
+            document.getElementById('startButton').disabled = false;
+            document.getElementById('startButton').classList.remove('opacity-50');
+            
+            // Reset tombol Mulai Ulang
+            const newRestartButton = restartButton.cloneNode(true);
+            restartButton.parentNode.replaceChild(newRestartButton, restartButton);
+            document.getElementById('restartButton').addEventListener('click', reshuffleCards);
 
             // Untuk grid 2x3 kita butuh 6 kartu total
             // Kita akan memilih emoji secara acak dari daftar emoji yang tersedia
@@ -432,7 +561,8 @@
             });
             
             // Tampilkan pesan instruksi
-            showMessage('Perhatikan posisi semua Buah! Klik tombol Mulai untuk memulai permainan.');
+            const currentPlayerName = document.getElementById('playerNameDisplay').textContent;
+            showMessage(`${currentPlayerName}, perhatikan posisi semua Buah! Klik tombol Mulai untuk memulai permainan.`);
         }
 
         // Fungsi untuk menangani klik pada kartu
@@ -529,10 +659,13 @@
                 startButton.classList.remove('hidden');
                 startButton.disabled = false;
                 startButton.classList.remove('opacity-50');
-                startButton.replaceWith(startButton.cloneNode(true));
-                // Seleccionar el botón nuevamente después de reemplazarlo
-                const refreshedStartButton = document.getElementById('startButton');
-                refreshedStartButton.addEventListener('click', function() {
+                
+                // Hapus event listener lama dan tambahkan yang baru
+                const newStartButton = startButton.cloneNode(true);
+                startButton.parentNode.replaceChild(newStartButton, startButton);
+                
+                // Tambahkan event listener baru
+                document.getElementById('startButton').addEventListener('click', function() {
                     // Hapus modal kemenangan jika ada sebelum memulai permainan baru
                     const winModal = document.getElementById('winNotificationModal');
                     if (winModal) {
@@ -598,8 +731,8 @@
                 <div class="text-center mb-4 relative">
                     ${confetti.outerHTML}
                     <div class="trophy-shine text-6xl mb-4 pulse-effect">🏆</div>
-                    <h2 class="text-3xl font-bold mb-4 text-gradient">SELAMAT!</h2>
-                    <p class="text-xl mb-6">Anda menyelesaikan permainan dalam <span class="font-bold text-blue-600">${moves}</span> langkah!</p>
+                    <h2 class="text-3xl font-bold mb-4 text-gradient">SELAMAT ${document.getElementById('playerNameDisplay').textContent}!</h2>
+                    <p class="text-xl mb-6">Kamu menyelesaikan permainan dalam <span class="font-bold text-blue-600">${moves}</span> langkah!</p>
                     <div class="flex justify-center space-x-2 mb-4">
                         ${emojiDisplay}
                     </div>
@@ -662,13 +795,13 @@
             modalContent.className = 'bg-white p-8 rounded-lg shadow-lg z-10 relative';
             modalContent.innerHTML = `
                 <div class="text-center mb-4">
-                    <h2 class="text-2xl font-bold mb-4">Anda menemukan pasangan ${emoji}!</h2>
+                    <h2 class="text-2xl font-bold mb-4">Hebat, ${document.getElementById('playerNameDisplay').textContent}! Kamu menemukan pasangan ${emoji}!</h2>
                     <div class="flex justify-center space-x-4">
                         <div class="text-6xl emoji-bounce">${emoji}</div>
                         <div class="text-6xl emoji-bounce">${emoji}</div>
                     </div>
                 </div>
-                <button class="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded w-full">
+                <button class="mt-4 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-2 px-4 rounded-full shadow-lg transform transition-transform hover:scale-105 w-full">
                     Tutup
                 </button>
             `;
@@ -690,10 +823,13 @@
                      if (startButton.textContent !== 'Main Lagi') {
                          startButton.textContent = 'Main Lagi';
                          startButton.classList.remove('hidden');
-                         startButton.replaceWith(startButton.cloneNode(true));
-                         // Seleccionar el botón nuevamente después de reemplazarlo
-                         const refreshedStartButton = document.getElementById('startButton');
-                         refreshedStartButton.addEventListener('click', initializeGame);
+                         
+                         // Hapus event listener lama dan tambahkan yang baru
+                         const newStartButton = startButton.cloneNode(true);
+                         startButton.parentNode.replaceChild(newStartButton, startButton);
+                         
+                         // Tambahkan event listener baru
+                         document.getElementById('startButton').addEventListener('click', initializeGame);
                      }
                 }, 500);
             });
@@ -703,6 +839,10 @@
 
         // Fungsi untuk menampilkan pesan kepada pengguna
         function showMessage(msg) {
+            // Pastikan pesan menggunakan nama pemain yang diambil dari elemen, bukan dari variabel
+            const currentPlayerName = document.getElementById('playerNameDisplay').textContent;
+            // Ganti placeholder nama pemain dengan nama pemain yang sebenarnya
+            msg = msg.replace('${playerName}', currentPlayerName);
             messageBox.textContent = msg;
             messageBox.classList.remove('hidden');
         }
@@ -711,7 +851,17 @@
         startButton.addEventListener('click', hideAllCards);
         
         // Event listener untuk tombol 'Mulai Ulang'
-        restartButton.addEventListener('click', reshuffleCards);
+        restartButton.addEventListener('click', function() {
+            // Hapus event listener lama dan tambahkan yang baru
+            const newRestartButton = restartButton.cloneNode(true);
+            restartButton.parentNode.replaceChild(newRestartButton, restartButton);
+            
+            // Tambahkan event listener baru
+            document.getElementById('restartButton').addEventListener('click', reshuffleCards);
+            
+            // Panggil fungsi reshuffleCards
+            reshuffleCards();
+        });
         
         // Fungsi untuk mengacak ulang kartu tanpa menutupnya
         function reshuffleCards() {
@@ -784,7 +934,8 @@
             });
             
             // Tampilkan pesan instruksi
-            showMessage('Emoji telah diacak ulang! Klik tombol Mulai untuk memulai permainan.');
+            const currentPlayerName = document.getElementById('playerNameDisplay').textContent;
+            showMessage(`${currentPlayerName}, emoji telah diacak ulang! Klik tombol Mulai untuk memulai permainan.`);
             
             // Tampilkan tombol Mulai untuk memulai permainan
             startButton.textContent = 'Mulai';
@@ -834,11 +985,73 @@
             startButton.classList.add('hidden');
             
             // Tampilkan pesan untuk memulai permainan
-            showMessage('Temukan pasangan emoji yang sama! Ada 3 jenis emoji berbeda.');
+            const currentPlayerName = document.getElementById('playerNameDisplay').textContent;
+            showMessage(`${currentPlayerName}, temukan pasangan emoji yang sama! Ada 3 jenis emoji berbeda.`);
         }
         
-        // Inisialisasi game saat halaman dimuat
-        window.onload = initializeGame;
+        // Event listener untuk tombol mulai bermain
+        startGameButton.addEventListener('click', function() {
+            // Ambil nama pemain dari input
+            playerName = playerNameInput.value.trim();
+            console.log('Nama pemain diambil:', playerName);
+            
+            // Validasi nama pemain
+            if (playerName === '') {
+                // Animasi shake pada input jika kosong
+                playerNameInput.classList.add('shake');
+                setTimeout(() => {
+                    playerNameInput.classList.remove('shake');
+                }, 500);
+                return;
+            }
+            
+            // Tampilkan nama pemain di dalam game dengan warna solid sebagai fallback
+            document.getElementById('playerNameDisplay').textContent = playerName;
+            document.getElementById('playerNameDisplay').style.color = '#000000';
+            console.log('Nama pemain diatur:', playerName);
+            
+            // Sembunyikan form nama pemain dan tampilkan game
+            playerNameForm.classList.add('fadeOut');
+            setTimeout(() => {
+                playerNameForm.classList.add('hidden');
+                gameContainer.classList.remove('hidden');
+                gameContainer.classList.add('scale-in-center');
+                
+                // Pastikan nama pemain masih terlihat setelah transisi
+                console.log('Setelah transisi - Nama pemain:', document.getElementById('playerNameDisplay').textContent);
+                
+                // Inisialisasi game
+                initializeGame();
+            }, 500);
+        });
+        
+        // Tambahkan event listener untuk input nama pemain (enter key)
+        playerNameInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                startGameButton.click();
+            }
+        });
+        
+        // Animasi shake untuk input yang kosong
+        document.head.insertAdjacentHTML('beforeend', `
+            <style>
+                @keyframes shake {
+                    0%, 100% { transform: translateX(0); }
+                    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+                    20%, 40%, 60%, 80% { transform: translateX(5px); }
+                }
+                
+                .shake {
+                    animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+                }
+            </style>
+        `);
+        
+        // Inisialisasi form nama pemain saat halaman dimuat
+        window.onload = function() {
+            // Fokus pada input nama pemain
+            playerNameInput.focus();
+        };
     </script>
 </body>
 </html>
