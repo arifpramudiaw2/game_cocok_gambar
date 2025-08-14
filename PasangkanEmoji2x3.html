@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pasangkan Emoji 2x3 (3 Jenis - Cocokkan 2)</title>
+    <!-- Memuat Tailwind CSS untuk styling yang mudah dan responsif -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Gaya kustom untuk memastikan kartu terlihat bagus dalam grid 2x3 dengan 3 jenis emoji (cocokkan 2) */
+        .card {
+            width: 80px; /* Lebar kartu default untuk perangkat kecil */
+            height: 80px; /* Tinggi kartu default, memastikan kartu persegi */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #a78bfa; /* Warna ungu cerah untuk bagian belakang kartu */
+            border-radius: 12px; /* Sudut membulat */
+            cursor: pointer;
+            font-size: 3rem; /* Ukuran emoji default */
+            transition: transform 0.3s ease-in-out, background-color 0.3s ease-in-out;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Bayangan lembut */
+            transform-style: preserve-3d;
+            position: relative;
+        }
+        
+        /* Animasi konfeti untuk notifikasi kemenangan */
+        @keyframes confetti-animation {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+        
+        .confetti-animation {
+            animation: confetti-animation 3s ease-in-out infinite;
+        }
+        
+        /* Efek bersinar pada trofi */
+        .trophy-shine {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .trophy-shine::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%);
+            transform: rotate(30deg);
+            animation: shine 3s infinite;
+        }
+        
+        @keyframes shine {
+            0% { transform: translateX(-100%) rotate(30deg); }
+            100% { transform: translateX(100%) rotate(30deg); }
+        }
+        
+        /* Efek pulsa untuk elemen */
+        .pulse-effect {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        /* Animasi untuk modal popup */
+        @keyframes scale-in-center {
+            0% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        .scale-in-center {
+            animation: scale-in-center 0.5s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+        }
+        
+        /* Animasi fadeOut untuk modal */
+         .fadeOut {
+             animation: fadeOut 0.5s ease-out forwards;
+         }
+         
+         @keyframes fadeOut {
+             0% { opacity: 1; }
+             100% { opacity: 0; }
+         }
+         
+         /* Teks gradien untuk judul */
+         .text-gradient {
+             background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #ffbe0b);
+             -webkit-background-clip: text;
+             background-clip: text;
+             color: transparent;
+             background-size: 300% 300%;
+             animation: gradient-shift 4s ease infinite;
+         }
+         
+         @keyframes gradient-shift {
+             0% { background-position: 0% 50%; }
+             50% { background-position: 100% 50%; }
+             100% { background-position: 0% 50%; }
+         }
+
+        .card.flipped {
+            background-color: #fca5a5; /* Warna merah muda saat kartu dibalik */
+            transform: rotateY(180deg);
+        }
+
+        .card-inner {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 12px;
+        }
+
+        .card-front {
+            background-color: #fca5a5; /* Warna merah muda untuk bagian depan kartu */
+            transform: rotateY(180deg);
+        }
+
+        .card-back {
+            background-color: #a78bfa; /* Warna ungu cerah untuk bagian belakang kartu */
+        }
+
+        .card.matched .card-inner {
+            transition: all 0.5s ease-out;
+        }
+        
+        /* Efek pulse untuk kartu yang cocok */
+        .card-inner.pulse-effect {
+            animation: cardPulse 2s infinite;
+        }
+        
+        @keyframes cardPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        /* Gaya untuk ikon sukses */
+        .success-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3.5rem; /* Ukuran font lebih besar untuk emoji buah */
+            z-index: 10;
+            animation: popInAbsolute 0.5s ease-out forwards;
+            opacity: 0;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.8); /* Efek cahaya di sekitar buah */
+        }
+        
+        /* Animasi untuk ikon sukses (untuk elemen dengan posisi absolute) */
+        @keyframes popInAbsolute {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.5) rotate(-10deg);
+            }
+            50% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1.5) rotate(10deg);
+            }
+            75% {
+                transform: translate(-50%, -50%) scale(1.2) rotate(-5deg);
+            }
+            100% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1) rotate(0deg);
+            }
+        }
+        
+        /* Animasi untuk popup container */
+        @keyframes popIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+            70% {
+                opacity: 1;
+                transform: scale(1.1);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        /* Animasi untuk popup emoji */
+        @keyframes bounceIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.2);
+            }
+            70% {
+                transform: scale(0.9);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        /* Animasi untuk fade out */
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+            }
+            to {
+                opacity: 0;
+            }
+        }
+        
+        /* Gaya untuk emoji yang berhasil ditemukan */
+        .emoji-bounce {
+            display: inline-block;
+            transition: transform 0.2s ease;
+        }
+        
+        .emoji-bounce:hover {
+            transform: scale(1.2);
+        }
+
+        /* Penyesuaian untuk gameBoard agar lebih rapi dan terpusat */
+        #gameBoard {
+            display: grid;
+            /* Menggunakan 2 kolom tetap untuk konsistensi */
+            grid-template-columns: repeat(2, 1fr); /* 2 kolom */
+            justify-content: center; /* Pusatkan item secara horizontal dalam grid */
+            /* Menghitung max-width berdasarkan 2 kartu, 1 gap (gap-3 = 12px), dan 2 padding (10px) */
+            max-width: calc(2 * 80px + 1 * 12px + 2 * 10px);
+            margin: 0 auto; /* Pusatkan papan game di tengah halaman */
+            gap: 12px; /* Sesuai dengan gap-3 di HTML */
+            padding: 10px; /* Sedikit padding di sekitar papan game */
+        }
+
+        /* Responsif untuk ukuran layar yang berbeda */
+        @media (min-width: 480px) { /* Untuk ponsel yang lebih besar */
+            .card {
+                width: 90px;
+                height: 90px;
+                font-size: 3.5rem;
+            }
+            #gameBoard {
+                max-width: calc(2 * 90px + 1 * 12px + 2 * 10px);
+            }
+        }
+
+        @media (min-width: 640px) { /* Untuk tablet dan layar yang lebih lebar */
+            .card {
+                width: 100px;
+                height: 100px;
+                font-size: 4rem;
+            }
+            #gameBoard {
+                max-width: calc(2 * 100px + 1 * 12px + 2 * 10px);
+            }
+        }
+
+        @media (min-width: 768px) { /* Untuk desktop */
+            .card {
+                width: 120px;
+                height: 120px;
+                font-size: 5rem;
+            }
+            #gameBoard {
+                max-width: calc(2 * 120px + 1 * 12px + 2 * 10px);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 min-h-screen flex flex-col items-center justify-center p-4 font-sans text-white">
+
+    <div class="bg-white bg-opacity-30 p-6 rounded-2xl shadow-xl max-w-4xl w-full text-center">
+        <h1 class="text-4xl md:text-5xl font-extrabold mb-6 text-white drop-shadow-lg">Cocokan gambar Buah! 🎉</h1>
+
+        <div class="flex justify-around items-center mb-6 text-2xl md:text-3xl font-bold">
+            <p>Langkah: <span id="moves">0</span></p>
+            <button id="restartButton" class="bg-yellow-400 hover:bg-yellow-500 text-purple-800 font-bold py-3 px-6 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105">
+                Mulai Ulang
+            </button>
+        </div>
+
+        <!-- Grid game 2x3 dengan 3 jenis emoji (cocokkan 2) -->
+        <div id="gameBoard" class="grid grid-cols-2 gap-3 justify-center max-w-full mx-auto">
+            <!-- Kartu game akan dimasukkan di sini oleh JavaScript -->
+        </div>
+        
+        <!-- Tombol Mulai di tengah bawah -->
+        <div class="flex justify-center mt-6">
+            <button id="startButton" class="bg-green-400 hover:bg-green-500 text-purple-800 font-bold py-3 px-10 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 text-xl">
+                Mulai
+            </button>
+        </div>
+
+        <!-- Kotak pesan untuk notifikasi game -->
+        <div id="messageBox" class="mt-8 p-4 bg-blue-500 bg-opacity-70 rounded-lg text-xl font-semibold hidden">
+            <!-- Pesan game akan ditampilkan di sini -->
+        </div>
+    </div>
+
+    <script>
+        // Mendapatkan elemen-elemen DOM yang diperlukan
+        const gameBoard = document.getElementById('gameBoard');
+        const movesDisplay = document.getElementById('moves');
+        const restartButton = document.getElementById('restartButton');
+        const startButton = document.getElementById('startButton');
+        const messageBox = document.getElementById('messageBox');
+
+        // Daftar emoji yang akan digunakan (untuk memilih 3 jenis emoji secara acak untuk grid 2x3)
+         const emojis = ['🍎', '🍌', '🍇', '🍓', '🍊', '🍉', '🥭', '🍍', '🍒', '🥝', '🥥', '🍑'];
+        let gameCards = []; // Array untuk menyimpan semua kartu dalam game
+        let flippedCards = []; // Array untuk menyimpan kartu yang sedang dibalik
+        let matchedPairs = 0; // Menghitung pasangan yang sudah cocok
+        let moves = 0; // Menghitung jumlah langkah
+        let matchedCards = []; // Array untuk menyimpan kartu yang sudah cocok
+        let foundEmojis = []; // Array untuk menyimpan jenis emoji yang sudah ditemukan
+
+        // Fungsi untuk mengocok array (algoritma Fisher-Yates)
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]]; // Tukar elemen
+            }
+        }
+
+        // Fungsi untuk menginisialisasi atau memulai ulang game
+        function initializeGame() {
+            // Sembunyikan pesan dan reset tampilan
+            messageBox.classList.add('hidden');
+            messageBox.textContent = '';
+            
+            // Hapus semua ikon sukses yang mungkin ada dari permainan sebelumnya
+            const successIcons = document.querySelectorAll('.success-icon');
+            successIcons.forEach(icon => icon.remove());
+            
+            // Hapus semua modal yang mungkin masih ada
+            const existingModals = document.querySelectorAll('.fixed.inset-0.flex');
+            existingModals.forEach(modal => modal.remove());
+
+            // Reset tombol Mulai
+            startButton.textContent = 'Mulai';
+            // Hapus semua event listener yang ada dan tambahkan yang baru
+            startButton.replaceWith(startButton.cloneNode(true));
+            // Seleccionar el botón nuevamente después de reemplazarlo
+            const refreshedStartButton = document.getElementById('startButton');
+            refreshedStartButton.addEventListener('click', hideAllCards);
+            refreshedStartButton.classList.remove('hidden');
+            refreshedStartButton.disabled = false;
+            refreshedStartButton.classList.remove('opacity-50');
+
+            // Untuk grid 2x3 kita butuh 6 kartu total
+            // Kita akan memilih emoji secara acak dari daftar emoji yang tersedia
+            // Kita akan menggunakan 3 jenis emoji berbeda, masing-masing muncul 2 kali
+            
+            // Kocok daftar emoji untuk memilih secara acak
+            let shuffledEmojis = [...emojis];
+            shuffleArray(shuffledEmojis);
+            
+            // Reset gameCards array
+            gameCards = [];
+            
+            // Ambil 3 emoji pertama dari daftar yang sudah diacak
+            let selectedEmojis = shuffledEmojis.slice(0, 3);
+            
+            // Buat 3 kelompok (6 kartu) dari emoji yang dipilih, masing-masing emoji muncul 2 kali
+            gameCards = [
+                selectedEmojis[0], selectedEmojis[0],
+                selectedEmojis[1], selectedEmojis[1],
+                selectedEmojis[2], selectedEmojis[2]
+            ];
+            
+            
+            // Kocok kartu agar posisinya acak
+            shuffleArray(gameCards);
+
+            // Reset status game
+            flippedCards = [];
+            matchedPairs = 0;
+            moves = 0;
+            matchedCards = [];
+            foundEmojis = [];
+            movesDisplay.textContent = moves;
+            gameBoard.innerHTML = ''; // Kosongkan papan game
+
+            // Buat elemen kartu untuk setiap emoji
+            gameCards.forEach((emoji, index) => {
+                const card = document.createElement('div');
+                card.classList.add('card');
+                card.dataset.emoji = emoji; // Simpan emoji di dataset untuk referensi
+                card.dataset.index = index; // Simpan indeks untuk identifikasi
+
+                const cardInner = document.createElement('div');
+                cardInner.classList.add('card-inner');
+
+                const cardFront = document.createElement('div');
+                cardFront.classList.add('card-front');
+                cardFront.textContent = emoji; // Emoji di bagian depan kartu
+
+                const cardBack = document.createElement('div');
+                cardBack.classList.add('card-back');
+                // Bagian belakang kartu bisa kosong atau memiliki ikon
+
+                cardInner.appendChild(cardFront);
+                cardInner.appendChild(cardBack);
+                card.appendChild(cardInner);
+
+                card.addEventListener('click', handleCardClick); // Tambahkan event listener
+                gameBoard.appendChild(card); // Tambahkan kartu ke papan game
+                
+                // Tampilkan semua kartu saat permainan dimulai
+                card.classList.add('flipped');
+            });
+            
+            // Tampilkan pesan instruksi
+            showMessage('Perhatikan posisi semua Buah! Klik tombol Mulai untuk memulai permainan.');
+        }
+
+        // Fungsi untuk menangani klik pada kartu
+        function handleCardClick(event) {
+            const clickedCard = event.currentTarget; // Kartu yang diklik
+            
+            // Jika kartu sudah terbuka atau sudah cocok, abaikan klik
+            if (clickedCard.classList.contains('flipped') || clickedCard.classList.contains('matched') || flippedCards.length === 2) {
+                return;
+            }
+            
+            // Putar kartu
+            clickedCard.classList.add('flipped');
+            flippedCards.push(clickedCard); // Tambahkan ke daftar kartu yang dibalik
+            
+            // Jika ada dua kartu yang dibalik, periksa apakah cocok
+            if (flippedCards.length === 2) {
+                moves++; // Tambah jumlah langkah
+                movesDisplay.textContent = moves; // Perbarui tampilan langkah
+                
+                const [card1, card2] = flippedCards; // Ambil dua kartu yang dibalik
+                
+                // Periksa apakah emoji cocok (kedua kartu harus sama)
+                if (card1.dataset.emoji === card2.dataset.emoji) {
+                    // Jika cocok, tandai sebagai 'matched' dan kosongkan flippedCards
+                    card1.classList.add('matched');
+                    card2.classList.add('matched');
+                    matchedPairs++; // Tambah jumlah pasangan yang cocok
+                    
+                    // Simpan kartu yang cocok untuk ditampilkan nanti
+                    matchedCards.push(card1);
+                    matchedCards.push(card2);
+                    
+                    // Tambahkan emoji ke daftar emoji yang ditemukan jika belum ada
+                    if (!foundEmojis.includes(card1.dataset.emoji)) {
+                        foundEmojis.push(card1.dataset.emoji);
+                    }
+                    
+                    // Tandai kartu yang cocok dengan efek visual tapi tetap terlihat
+                    setTimeout(() => {
+                        // Tambahkan efek visual pada kartu yang cocok
+                        card1.querySelector('.card-inner').style.boxShadow = '0 0 15px 5px rgba(0, 255, 0, 0.7)';
+                        card2.querySelector('.card-inner').style.boxShadow = '0 0 15px 5px rgba(0, 255, 0, 0.7)';
+                        
+                        // Tambahkan border hijau pada kartu
+                        card1.querySelector('.card-front').style.border = '3px solid #22c55e';
+                        card2.querySelector('.card-front').style.border = '3px solid #22c55e';
+                        
+                        // Tambahkan efek pulse pada kartu yang cocok
+                        card1.querySelector('.card-inner').classList.add('pulse-effect');
+                        card2.querySelector('.card-inner').classList.add('pulse-effect');
+                        
+                        // Tambahkan tanda centang kecil di sudut kartu
+                        const checkmark1 = document.createElement('div');
+                        checkmark1.innerHTML = '✓';
+                        checkmark1.className = 'absolute top-1 right-1 text-green-600 font-bold text-lg';
+                        card1.appendChild(checkmark1);
+                        
+                        const checkmark2 = document.createElement('div');
+                        checkmark2.innerHTML = '✓';
+                        checkmark2.className = 'absolute top-1 right-1 text-green-600 font-bold text-lg';
+                        card2.appendChild(checkmark2);
+                        
+                        flippedCards = []; // Kosongkan kartu yang dibalik
+                        checkWin(); // Periksa apakah game sudah selesai
+                    }, 600);
+                } else {
+                    // Jika tidak cocok, balik kembali setelah sedikit penundaan
+                    setTimeout(() => {
+                        card1.classList.remove('flipped');
+                        card2.classList.remove('flipped');
+                        flippedCards = []; // Kosongkan kartu yang dibalik
+                    }, 1000); // 1 detik agar pemain bisa melihat perbedaan
+                }
+            }
+        }
+
+        // Fungsi untuk memeriksa apakah game sudah selesai
+        function checkWin() {
+            // Hitung jumlah kartu yang tersisa (yang belum cocok)
+            const remainingCards = document.querySelectorAll('.card:not(.matched)').length;
+            
+            // Jika semua kartu sudah cocok (tidak ada kartu yang tersisa)
+            if (remainingCards === 0) {
+                // Tampilkan pesan umum untuk 3 jenis emoji dengan 2 kartu yang dicocokkan
+                showMessage(`Selamat! Anda menyelesaikan permainan dengan 3 jenis emoji dalam ${moves} langkah! 🎉`);
+                
+                // Tampilkan notifikasi kemenangan yang menarik
+                showWinNotification();
+                
+                // Tampilkan tombol Mulai kembali dengan teks "Main Lagi"
+            setTimeout(() => {
+                startButton.textContent = 'Main Lagi';
+                startButton.classList.remove('hidden');
+                startButton.disabled = false;
+                startButton.classList.remove('opacity-50');
+                startButton.replaceWith(startButton.cloneNode(true));
+                // Seleccionar el botón nuevamente después de reemplazarlo
+                const refreshedStartButton = document.getElementById('startButton');
+                refreshedStartButton.addEventListener('click', function() {
+                    // Hapus modal kemenangan jika ada sebelum memulai permainan baru
+                    const winModal = document.getElementById('winNotificationModal');
+                    if (winModal) {
+                        document.body.removeChild(winModal);
+                    }
+                    // Mulai permainan baru
+                    initializeGame();
+                });
+            }, 1500);
+            }
+        }
+        
+        // Fungsi untuk menampilkan notifikasi kemenangan yang menarik
+        function showWinNotification() {
+            // Hapus modal yang mungkin sudah ada
+            const existingModals = document.querySelectorAll('.fixed.inset-0.flex');
+            existingModals.forEach(modal => modal.remove());
+            
+            // Buat modal untuk notifikasi kemenangan
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 flex items-center justify-center z-50';
+            modal.id = 'winNotificationModal'; // Tambahkan ID untuk referensi mudah
+            
+            // Buat background semi-transparan
+            const overlay = document.createElement('div');
+            overlay.className = 'absolute inset-0 bg-black opacity-50';
+            modal.appendChild(overlay);
+            
+            // Buat container untuk notifikasi dengan animasi
+            const modalContent = document.createElement('div');
+            modalContent.className = 'bg-white p-8 rounded-lg shadow-lg z-10 relative transform scale-in-center';
+            
+            // Tambahkan konfeti di latar belakang
+            const confetti = document.createElement('div');
+            confetti.className = 'absolute inset-0 overflow-hidden';
+            
+            // Buat 50 konfeti dengan warna acak
+            for (let i = 0; i < 50; i++) {
+                const confettiPiece = document.createElement('div');
+                const colors = ['bg-red-500', 'bg-blue-500', 'bg-yellow-500', 'bg-green-500', 'bg-purple-500', 'bg-pink-500'];
+                const randomColor = colors[Math.floor(Math.random() * colors.length)];
+                
+                confettiPiece.className = `absolute w-2 h-2 ${randomColor} rounded-full confetti-animation`;
+                confettiPiece.style.left = `${Math.random() * 100}%`;
+                confettiPiece.style.top = `${Math.random() * 100}%`;
+                confettiPiece.style.animationDelay = `${Math.random() * 2}s`;
+                confettiPiece.style.animationDuration = `${1 + Math.random() * 2}s`;
+                
+                confetti.appendChild(confettiPiece);
+            }
+            
+            // Tambahkan emoji yang ditemukan dalam permainan
+            // Pastikan kita mendapatkan emoji yang unik dari kartu yang cocok
+            const emojisFound = [];
+            matchedCards.forEach(card => {
+                if (card && card.dataset && card.dataset.emoji && !emojisFound.includes(card.dataset.emoji)) {
+                    emojisFound.push(card.dataset.emoji);
+                }
+            });
+            const emojiDisplay = emojisFound.map(emoji => `<span class="text-5xl emoji-bounce inline-block mx-2">${emoji}</span>`).join('');
+            
+            modalContent.innerHTML = `
+                <div class="text-center mb-4 relative">
+                    ${confetti.outerHTML}
+                    <div class="trophy-shine text-6xl mb-4 pulse-effect">🏆</div>
+                    <h2 class="text-3xl font-bold mb-4 text-gradient">SELAMAT!</h2>
+                    <p class="text-xl mb-6">Anda menyelesaikan permainan dalam <span class="font-bold text-blue-600">${moves}</span> langkah!</p>
+                    <div class="flex justify-center space-x-2 mb-4">
+                        ${emojiDisplay}
+                    </div>
+                    <div class="text-lg text-gray-700 mb-4">Semua pasangan emoji telah ditemukan!</div>
+                    <button id="continueButton" class="mt-4 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-3 px-6 rounded-full shadow-lg transform transition-transform hover:scale-105 w-full">
+                        Lanjutkan
+                    </button>
+                </div>
+            `;
+            
+            modal.appendChild(modalContent);
+            document.body.appendChild(modal);
+            
+            // Tambahkan event listener untuk tombol Lanjutkan
+            const continueButton = document.getElementById('continueButton');
+            continueButton.addEventListener('click', function() {
+                // Hapus modal saat tombol diklik
+                const winModal = document.getElementById('winNotificationModal');
+                if (winModal) {
+                    modalContent.classList.add('fadeOut');
+                    setTimeout(() => {
+                        document.body.removeChild(winModal);
+                    }, 500);
+                }
+            });
+            
+            // Tambahkan efek suara kemenangan (opsional)
+            const winSound = new Audio('data:audio/mpeg;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAAFAAAGUACFhYWFhYWFhYWFhYWFhYWFhYWFvb29vb29vb29vb29vb29vb29vb3T09PT09PT09PT09PT09PT09PT0+np6enp6enp6enp6enp6enp6enp//////////////////////////8AAAAKTEFNRTMuMTAwBEgAAAAAAAAAABUgJAMGQQABmgAABlAiznawAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//sQxAADwAABpAAAACAAADSAAAAETEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVU=');
+            winSound.play();
+            
+            // Tambahkan event listener untuk tombol tutup
+            const closeButton = modal.querySelector('button');
+            closeButton.addEventListener('click', () => {
+                // Animasi fade out
+                modalContent.classList.add('fadeOut');
+                
+                // Hapus modal setelah animasi selesai
+                setTimeout(() => {
+                    document.body.removeChild(modal);
+                }, 500);
+            });
+        }
+        
+        // Fungsi untuk menampilkan emoji yang berhasil ditemukan
+        function showSuccessEmojis(emojis) {
+            // Buat modal untuk menampilkan emoji
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 flex items-center justify-center z-50';
+            
+            // Buat background semi-transparan
+            const overlay = document.createElement('div');
+            overlay.className = 'absolute inset-0 bg-black opacity-50';
+            modal.appendChild(overlay);
+            
+            // Ambil emoji yang ditemukan (hanya ada satu jenis)
+            const emoji = emojis[0];
+            
+            // Buat container untuk emoji dengan template literal
+            const modalContent = document.createElement('div');
+            modalContent.className = 'bg-white p-8 rounded-lg shadow-lg z-10 relative';
+            modalContent.innerHTML = `
+                <div class="text-center mb-4">
+                    <h2 class="text-2xl font-bold mb-4">Anda menemukan pasangan ${emoji}!</h2>
+                    <div class="flex justify-center space-x-4">
+                        <div class="text-6xl emoji-bounce">${emoji}</div>
+                        <div class="text-6xl emoji-bounce">${emoji}</div>
+                    </div>
+                </div>
+                <button class="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded w-full">
+                    Tutup
+                </button>
+            `;
+            
+            modal.appendChild(modalContent);
+            document.body.appendChild(modal);
+            
+            // Tambahkan event listener untuk tombol tutup
+            const closeButton = modal.querySelector('button');
+            closeButton.addEventListener('click', () => {
+                // Animasi fade out
+                modalContent.classList.add('fadeOut');
+                
+                // Hapus modal setelah animasi selesai
+                setTimeout(() => {
+                    document.body.removeChild(modal);
+                    
+                    // Setelah menutup popup, tampilkan tombol Main Lagi jika belum ditampilkan
+                     if (startButton.textContent !== 'Main Lagi') {
+                         startButton.textContent = 'Main Lagi';
+                         startButton.classList.remove('hidden');
+                         startButton.replaceWith(startButton.cloneNode(true));
+                         // Seleccionar el botón nuevamente después de reemplazarlo
+                         const refreshedStartButton = document.getElementById('startButton');
+                         refreshedStartButton.addEventListener('click', initializeGame);
+                     }
+                }, 500);
+            });
+        }
+        
+
+
+        // Fungsi untuk menampilkan pesan kepada pengguna
+        function showMessage(msg) {
+            messageBox.textContent = msg;
+            messageBox.classList.remove('hidden');
+        }
+
+        // Event listener untuk tombol 'Mulai'
+        startButton.addEventListener('click', hideAllCards);
+        
+        // Event listener untuk tombol 'Mulai Ulang'
+        restartButton.addEventListener('click', reshuffleCards);
+        
+        // Fungsi untuk mengacak ulang kartu tanpa menutupnya
+        function reshuffleCards() {
+            // Hapus modal kemenangan jika ada
+            const winModal = document.getElementById('winNotificationModal');
+            if (winModal) {
+                document.body.removeChild(winModal);
+            }
+            
+            // Reset status game
+            flippedCards = [];
+            matchedPairs = 0;
+            moves = 0;
+            matchedCards = [];
+            foundEmojis = [];
+            movesDisplay.textContent = moves;
+            
+            // Hapus efek visual pada kartu yang cocok
+            const allCards = document.querySelectorAll('.card');
+            allCards.forEach(card => {
+                // Hapus kelas matched tapi biarkan kartu tetap terbuka (flipped)
+                card.classList.remove('matched');
+                
+                // Hapus efek visual pada kartu
+                const cardInner = card.querySelector('.card-inner');
+                if (cardInner) {
+                    cardInner.style.boxShadow = '';
+                    cardInner.classList.remove('pulse-effect');
+                }
+                
+                // Hapus border hijau pada kartu
+                const cardFront = card.querySelector('.card-front');
+                if (cardFront) {
+                    cardFront.style.border = '';
+                }
+                
+                // Hapus tanda centang jika ada
+                const checkmarks = card.querySelectorAll('.absolute.top-1.right-1');
+                checkmarks.forEach(checkmark => checkmark.remove());
+            });
+            
+            // Kocok ulang emoji
+            let shuffledEmojis = [...emojis];
+            shuffleArray(shuffledEmojis);
+            
+            // Ambil 3 emoji baru secara acak
+            let selectedEmojis = shuffledEmojis.slice(0, 3);
+            
+            // Buat array kartu baru dengan emoji yang diacak
+            gameCards = [
+                selectedEmojis[0], selectedEmojis[0],
+                selectedEmojis[1], selectedEmojis[1],
+                selectedEmojis[2], selectedEmojis[2]
+            ];
+            
+            // Kocok posisi kartu
+            shuffleArray(gameCards);
+            
+            // Perbarui emoji pada kartu yang ada dan pastikan semua kartu terbuka (flipped)
+            allCards.forEach((card, index) => {
+                // Perbarui emoji di dataset dan tampilan
+                card.dataset.emoji = gameCards[index];
+                const cardFront = card.querySelector('.card-front');
+                if (cardFront) {
+                    cardFront.textContent = gameCards[index];
+                }
+                
+                // Pastikan kartu tetap terbuka (flipped)
+                card.classList.add('flipped');
+            });
+            
+            // Tampilkan pesan instruksi
+            showMessage('Emoji telah diacak ulang! Klik tombol Mulai untuk memulai permainan.');
+            
+            // Tampilkan tombol Mulai untuk memulai permainan
+            startButton.textContent = 'Mulai';
+            startButton.classList.remove('hidden');
+            startButton.disabled = false;
+            startButton.classList.remove('opacity-50');
+        }
+
+        // Fungsi untuk menutup semua kartu saat tombol Mulai diklik
+        function hideAllCards() {
+            // Nonaktifkan tombol Mulai selama animasi berlangsung
+            startButton.disabled = true;
+            startButton.classList.add('opacity-50');
+            
+            // Tutup SEMUA kartu untuk memulai permainan, termasuk yang sudah cocok (matched)
+            const allCards = document.querySelectorAll('.card');
+            allCards.forEach(card => {
+                // Hapus kelas matched dan efek visual lainnya
+                card.classList.remove('flipped', 'matched');
+                
+                // Hapus efek visual pada kartu yang cocok
+                const cardInner = card.querySelector('.card-inner');
+                if (cardInner) {
+                    cardInner.style.boxShadow = '';
+                    cardInner.classList.remove('pulse-effect');
+                }
+                
+                // Hapus border hijau pada kartu
+                const cardFront = card.querySelector('.card-front');
+                if (cardFront) {
+                    cardFront.style.border = '';
+                }
+                
+                // Hapus tanda centang jika ada
+                const checkmarks = card.querySelectorAll('.absolute.top-1.right-1');
+                checkmarks.forEach(checkmark => checkmark.remove());
+            });
+            
+            // Sembunyikan pesan instruksi
+            messageBox.classList.add('hidden');
+            flippedCards = []; // Reset kartu yang dibalik
+            matchedCards = []; // Reset kartu yang sudah cocok
+            matchedPairs = 0; // Reset jumlah pasangan yang cocok
+            foundEmojis = []; // Reset emoji yang ditemukan
+            
+            // Sembunyikan tombol Mulai setelah permainan dimulai
+            startButton.classList.add('hidden');
+            
+            // Tampilkan pesan untuk memulai permainan
+            showMessage('Temukan pasangan emoji yang sama! Ada 3 jenis emoji berbeda.');
+        }
+        
+        // Inisialisasi game saat halaman dimuat
+        window.onload = initializeGame;
+    </script>
+</body>
+</html>
